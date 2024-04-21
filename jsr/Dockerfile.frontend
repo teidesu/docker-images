@@ -1,0 +1,19 @@
+ARG REV=d44f2b9e8cfba3c0d09d42c81544d810f3fe859a
+FROM alpine:3.14 as build
+WORKDIR /app
+
+RUN apk add git && \
+    git clone --depth=1 https://github.com/jsr-io/jsr && \
+    cd jsr && \
+    git fetch --depth=1 origin $REV && \
+    git checkout $REV
+
+FROM denoland/deno:alpine-1.41.3
+
+WORKDIR /app
+COPY --from=build /app/jsr/frontend .
+
+RUN deno task build
+RUN deno cache main.ts
+
+CMD ["run", "-A", "--cached-only", "main.ts"]

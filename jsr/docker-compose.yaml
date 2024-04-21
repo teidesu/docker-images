@@ -1,0 +1,45 @@
+version: "3"
+services:
+  db:
+    image: postgres:15
+    command: postgres -c 'max_connections=1000'
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: registry
+    healthcheck:
+      test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+      interval: 5s
+      retries: 20
+    # optional: to persist data
+    # volumes:
+    #   - ./data:/var/lib/postgresql/data
+  api:
+    depends_on:
+      db:
+        condition: service_healthy
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+    env_file:
+      - .env
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.frontend
+    env_file:
+      - .env
+    environment:
+      - "API_ROOT=http://api:8001/api"
+  nginx:
+    depends_on:
+      - api
+      - frontend
+    image: nginx:1.21
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+networks: 
+  jsr: {}

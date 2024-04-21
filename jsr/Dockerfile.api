@@ -1,0 +1,26 @@
+ARG REV=d44f2b9e8cfba3c0d09d42c81544d810f3fe859a
+FROM rust:1.77 as build
+
+WORKDIR /registry_api
+RUN git clone --depth=1 https://github.com/jsr-io/jsr && \
+    cd jsr && \
+    git fetch --depth=1 origin $REV && \
+    git checkout $REV
+
+WORKDIR /registry_api/jsr/api
+
+RUN cargo build --release
+
+# our final base
+FROM debian:bookworm-20230703-slim
+
+RUN apt-get update && \
+  apt-get install -y ca-certificates && \
+  rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /registry_api/jsr/api/target/release/registry_api .
+
+ENV RUST_BACKTRACE=1
+
+# set the startup command to run your binary
+ENTRYPOINT ["./registry_api"]
