@@ -5,7 +5,6 @@ on:
     inputs:
       version:
         description: 'Name of version'
-        required: true
       name: 
         description: 'Name of image'
         required: true
@@ -28,11 +27,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ inputs.dockerfile }}
           platforms: linux/amd64, linux/arm64
-          tags: ghcr.io/${{ inputs.name }}:${{ inputs.version }}, ghcr.io/${{ inputs.name }}:latest
+          tags: ghcr.io/${{ inputs.name }}:${{ inputs.version || github.sha }}, ghcr.io/${{ inputs.name }}:latest
           push: true
-          provenance: true
+          provenance: false
