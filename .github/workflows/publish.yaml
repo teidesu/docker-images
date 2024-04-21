@@ -1,0 +1,38 @@
+name: Tag and publish Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Name of version'
+        required: true
+      name: 
+        description: 'Name of image'
+        required: true
+      dockerfile:
+        description: 'Path to Dockerfile'
+        required: true
+
+jobs:
+  build: 
+    name: Build and push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ inputs.dockerfile }}
+          platforms: linux/amd64, linux/arm64
+          tags: ghcr.io/${{ inputs.name }}:${{ inputs.version }}, ghcr.io/${{ inputs.name }}:latest
+          push: true
+          provenance: true
