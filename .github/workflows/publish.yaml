@@ -33,6 +33,6 @@ jobs:
           context: .
           file: ${{ inputs.dockerfile }}
           platforms: linux/amd64, linux/arm64
-          tags: ghcr.io/${{ inputs.name }}:${{ inputs.version || github.sha }}, ghcr.io/${{ inputs.name }}:latest
+          tags: ghcr.io/teidesu/${{ inputs.name }}:${{ inputs.version || github.sha }}, ghcr.io/teidesu/${{ inputs.name }}:latest
           push: true
           provenance: false
