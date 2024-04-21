@@ -19,15 +19,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    build: 
-      context: .
-      dockerfile: Dockerfile.api
+    image: ghcr.io/teidesu/jsr-api:latest
+    # or build locally
+    # build: 
+    #   context: .
+    #   dockerfile: Dockerfile.api
     env_file:
       - .env
   frontend:
-    build: 
-      context: .
-      dockerfile: Dockerfile.frontend
+    image: ghcr.io/teidesu/jsr-frontend:latest
+    # or build locally
+    # build: 
+    #   context: .
+    #   dockerfile: Dockerfile.frontend
     env_file:
       - .env
     environment:

@@ -11,11 +11,18 @@ on:
       dockerfile:
         description: 'Path to Dockerfile'
         required: true
+      platforms:
+        description: 'List of platforms (JSON)'
+        required: false
+        default: '["linux/amd64","linux/arm64"]'
 
 jobs:
   build: 
     name: Build and push
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(inputs.platforms) }}
+    runs-on: ${{matrix.platform == 'linux/amd64' && 'ubuntu-latest' || matrix.platform == 'linux/arm64' && fromJson('["self-hosted", "linux", "ARM64"]') || fromJSON('Bad platform') }}
     permissions:
       contents: write
       packages: write
@@ -32,7 +39,7 @@ jobs:
         with:
           context: .
           file: ${{ inputs.dockerfile }}
-          platforms: linux/amd64, linux/arm64
+          platforms: ${{ matrix.platform }}
           tags: ghcr.io/teidesu/${{ inputs.name }}:${{ inputs.version || github.sha }}, ghcr.io/teidesu/${{ inputs.name }}:latest
           push: true
           provenance: false
